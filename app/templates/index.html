@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+	{# {{ super() }} #}
+	<div class="container">
+		{% if name  %}
+
+		<h1>hello {{ name }}!</h1>
+		{% else %}
+		<h1>hello Stranger</h1>
+		{% endif %}
+		{# <h1>index.html</h1> #}
+		
+	</div>
+{% endblock %}

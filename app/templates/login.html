@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}
+	login page
+{% endblock %}
+{% block content %}
+<div class="container">
+	
+<form method="POST">
+	{{ form.user_name.label }} {{ form.user_name}}
+	<br>
+	{{form.psw.label}} {{form.psw}}
+	<br>
+	{{form.submit}}
+</form>
+<h1>user_name = {{ user_name }}</h1>
+<h1>password = {{ psw }}</h1>
+</div>
+{% endblock %}

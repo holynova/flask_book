@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% macro render(field) %}
+{{ field.label }} {{field}}	<br>
+{% if field.errors %}
+{% for error in field.errors %}
+<li class = 'error_msg'>{{error}}</li>
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="container">
+<form method="POST">
+	
+{{ render(form.username) }}
+{{ render(form.email) }}
+{{ render(form.password) }}
+{{ render(form.confirm) }}
+{{ render(form.accept_tos) }}
+{{ render(form.submit) }}
+</form>	
+<br>
+{% with msgs = get_flashed_messages() %}
+{% for msg in msgs %}
+<li class="error_msg"><h2>{{ msg }}</h2></li>
+	
+{% endfor %}
+{% endwith %}
+
+</div>
+
+
+{% endblock %}
