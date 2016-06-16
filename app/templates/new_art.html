@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+<div class="container">
+	
+	<h2>新文章</h2>
+	{# {{ form.csrf_token() }} #}
+	{{ wtf.quick_form(form) }}
+	<hr>
+	{% for art in arts %}
+		<h2> {{art.title}}</h2>
+		<h3> {{art.author}}</h3>
+		<p>{{art.content}}</p>
+		<hr>
+	{% endfor %}
+
+</div>
+	
+{% endblock %}
