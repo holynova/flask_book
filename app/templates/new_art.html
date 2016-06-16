@@ -9,12 +9,15 @@
 	{{ wtf.quick_form(form) }}
 	<hr>
 	{% for art in arts %}
-		<h2> {{art.title}}</h2>
-		<h3> {{art.author}}</h3>
-		<p>{{art.content}}</p>
-		<hr>
+	<div class="alert alert-info" role="alert">
+		<h2> {{art.title}}<small>{{art.author}}</small></h2>
+		{% for c in art.content %}
+		<p>{{c}}</p>
+
+		{% endfor %}
+	</div>
 	{% endfor %}
 
 </div>
-	
+
 {% endblock %}

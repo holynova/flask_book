@@ -140,8 +140,12 @@ class DB:
 		for i in range(N):
 			art = (random.choice(u'个人日记 工作感悟 学习笔记 编程学习'.split())+str(i),
 				random.choice(u'Zhao Qian Sun Li'.split())+'_'+random.choice('San Si Mazi'.split()),
-				random.choice([u'我是正文.\n'*10,u'我是正文他爹.\n'*10,u'我是正文他爷爷.\n'*10,])
-				)
+				# random.choice([
+				# 	[u'我是正文。']*10,
+				# 	[u'我是正文他爹。']*10,
+				# 	[u'我是正文他爷爷。']*8
+				# 	]))
+				u'我是正文')
 			arts.append(art)
 		logging.error('%d articles added' %N)
 		order = 'INSERT INTO '+ table_name+' VALUES (?,?,?)'
@@ -163,7 +167,11 @@ class DB:
 		return self.c.execute(order)
 		
 
-
+class Art():
+	def __init__(self,title,author,content):
+		self.title = title
+		self.author = author
+		self.content = content
 
 
 @app.route('/new',methods = ['GET',"POST"])
@@ -184,9 +192,17 @@ def new_art():
 
 #step1 先用单页面实现数据库的存储和显示问题
 #step2 改进成为有编辑页\文章单页\全部文章单独的页面的方式
-	arts = db.find_all('arts')
-	for art in arts:
-		print art
+	class Art():
+		def __init__(self,title,author,content):
+			self.title = title
+			self.author = author
+			self.content = content
+
+	db_query_arts = db.find_all('arts')
+	arts = []
+	for db_query_art in db_query_arts:
+		arts.append(Art(db_query_art[0],db_query_art[1],db_query_art[2]))
+		# logging.error('art.title = %s' %(art[0]))
 		# logging.error(art)	
 
 	#arts = 数据库中所有文章
