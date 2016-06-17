@@ -6,6 +6,8 @@ from flask import Flask,url_for,render_template,flash,request,session,redirect
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.wtf import Form
 from wtforms import BooleanField,StringField,SubmitField,TextAreaField,TextField,PasswordField,validators
+import uuid
+import datetime
 
 
 # from wrforms.validators import Required
@@ -24,9 +26,9 @@ class LoginForm(Form):
 class RegForm(Form):
 	username = TextField('user name',[validators.Length(min = 4,max=25)])
 	email = TextField('e-mail',[validators.Length(min=6, max=35)])
-	password = PasswordField('New Password', [validators.Required(),validators.EqualTo('confirm', message='Passwords must match')])
+	password = PasswordField('New Password', [validators.DataRequired(),validators.EqualTo('confirm', message='Passwords must match')])
 	confirm = PasswordField('Repeat Password')
-	accept_tos = BooleanField(u'我同意这个我从来没读过的用户协议', [validators.Required()])
+	accept_tos = BooleanField(u'我同意这个我从来没读过的用户协议', [validators.DataRequired()])
 	submit = SubmitField('submit')
 	def show(self):
 		print "username = ",self.username.data
@@ -116,9 +118,9 @@ def reg_success():
 	# pass
 
 class Article(Form):
-	title =  TextField(u'标题',[validators.Required(),validators.Length(min = 4,max=25)])
-	author =  TextField(u'作者',[validators.Required(),validators.Length(min = 4,max=25)])
-	content = TextAreaField(u'正文',[validators.Required()])
+	title =  TextField(u'标题',[validators.DataRequired(),validators.Length(min = 1,max=25)],default = u"新文章标题")
+	author =  TextField(u'作者',[validators.DataRequired(),validators.Length(min = 1,max=25)],default = u"孙悟空")
+	content = TextAreaField(u'正文',[validators.DataRequired()],default = u"孙悟空到此一游\n孙悟空故地重游\n")
 	submit = SubmitField(u'发布')
 
 class DB:
@@ -127,33 +129,34 @@ class DB:
 			print "new db ",db_name,' created'
 		self.conn = sqlite3.connect(db_name)
 		self.c = self.conn.cursor()
+		self.db_name = db_name
 		# self.creat_table()
 		# self.random_insert()
+	def connect(self):
+		self.__init__(self.db_name)
+
 	def creat_table(self,table_name='arts'):
 		order = 'DROP TABLE IF EXISTS '+table_name
 		self.c.execute(order)
-		order = 'CREATE TABLE '+table_name+' (title text,author text,content text)'
+		order = 'CREATE TABLE '+table_name+' (id text,title text,author text,content text,datetime text)'
 		self.c.execute(order)
 
 	def random_insert(self,table_name='arts',N=5):
 		arts = []
 		for i in range(N):
-			art = (random.choice(u'个人日记 工作感悟 学习笔记 编程学习'.split())+str(i),
+			art = (str(uuid.uuid1()),
+				random.choice(u'个人日记 工作感悟 学习笔记 编程学习'.split())+str(i),
 				random.choice(u'Zhao Qian Sun Li'.split())+'_'+random.choice('San Si Mazi'.split()),
-				# random.choice([
-				# 	[u'我是正文。']*10,
-				# 	[u'我是正文他爹。']*10,
-				# 	[u'我是正文他爷爷。']*8
-				# 	]))
-				u'我是正文')
+				u'我是正文',
+				datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 			arts.append(art)
 		logging.error('%d articles added' %N)
-		order = 'INSERT INTO '+ table_name+' VALUES (?,?,?)'
+		order = 'INSERT INTO '+ table_name+' VALUES (?,?,?,?,?)'
 		self.c.executemany(order,arts)
 		self.conn.commit()
 
 	def insert_one(self,table_name,art_tuple):
-		order = 'INSERT INTO '+ table_name+' VALUES (?,?,?)'
+		order = 'INSERT INTO '+ table_name+' VALUES (?,?,?,?,?)'
 		self.c.execute(order,art_tuple)
 		self.conn.commit()
 		logging.error('a new line has been added to database.')
@@ -165,55 +168,78 @@ class DB:
 		'''
 		order = 'SELECT * FROM '+table_name
 		return self.c.execute(order)
+	def close(self):
+		self.conn.close()
 		
 
 class Art():
-	def __init__(self,title,author,content):
+	def __init__(self,id,title,author,content,datetime):
+		self.id = id
 		self.title = title
 		self.author = author
 		self.content = content
+		self.datetime = datetime
 
 
 @app.route('/new',methods = ['GET',"POST"])
 def new_art():
-	db = DB(db_name = 'db.sql')
-	db.creat_table(table_name = 'arts')
-	db.random_insert('arts',5)
-
+	db.connect()
+	# logging.error()
 	art = Article(request.form)
+	# for a in art:
+		# logging.error(a)
+	
 	if request.method == 'POST':
 		if art.validate():
-			logging.error('new art added')
 			#存入数据库
-			db.insert_one(table_name = 'arts',art_tuple = (art.title,art.author,art.content))
+			db.insert_one(table_name = 'arts',
+				art_tuple = (str(uuid.uuid1()),
+				request.form['title'],
+				request.form['author'],
+				request.form['content'],
+				datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+			# db.insert_one(table_name = 'arts',art_tuple = ('art.title',"art.author","art.content"))
+			logging.error('new art added')
 
 			#生成一个唯一的文章ID
 			#跳转到单篇文章视图,显示预览
 
 #step1 先用单页面实现数据库的存储和显示问题
 #step2 改进成为有编辑页\文章单页\全部文章单独的页面的方式
-	class Art():
-		def __init__(self,title,author,content):
-			self.title = title
-			self.author = author
-			self.content = content
+
 
 	db_query_arts = db.find_all('arts')
 	arts = []
 	for db_query_art in db_query_arts:
-		arts.append(Art(db_query_art[0],db_query_art[1],db_query_art[2]))
-		# logging.error('art.title = %s' %(art[0]))
-		# logging.error(art)	
-
+		arts.append(Art(db_query_art[0],db_query_art[1],db_query_art[2],db_query_art[3],db_query_art[4]))
 	#arts = 数据库中所有文章
+	# db.close()
+	arts.reverse()
 	return render_template('new_art.html',form = art,arts = arts)
 
 
 @app.route('/articles/<art_id>')
-def show_all_arts(art_id):
-	pass
+def show_one_art(art_id):
+	db.connect()
+	result = db.c.execute('SELECT * FROM arts WHERE id = "e5e91740-345d-11e6-afe8-f01faf28ea2d"')
+	print '111111111111111111111111111111 result = ',result[0]
+	for r in result:
+		print '22222222222222222',r[0],r[1]
+	if result:
+		art = Art(result[0],result[1],result[2],result[3],result[4])
+	return render_template('one_article.html',art = art) 
+
+
+def db_init():
+	db = DB(db_name = 'db.sql')
+	db.creat_table(table_name = 'arts')
+	db.random_insert('arts',2)
+	db.close()
+	return db
 
 
 
 if __name__=='__main__':
+	# init()
+	db = db_init()
 	app.run(debug=True)

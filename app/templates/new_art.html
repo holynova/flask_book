@@ -10,11 +10,14 @@
 	<hr>
 	{% for art in arts %}
 	<div class="alert alert-info" role="alert">
-		<h2> {{art.title}}<small>{{art.author}}</small></h2>
-		{% for c in art.content %}
+		<h3> <a href="/articles/{{ art.id }}" title="">{{art.title}} </a>   <small> by:{{art.author}}</small></h3>
+		<p>发布时间:   {{art.datetime}}</p>
+		<p>id:   {{art.id}}</p>
+		<p>{{art.content}}</p>
+<!-- 		{% for c in art.content %}
 		<p>{{c}}</p>
 
-		{% endfor %}
+		{% endfor %} -->
 	</div>
 	{% endfor %}
 
