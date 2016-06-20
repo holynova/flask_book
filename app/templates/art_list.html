@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+	
+<div class="container">
+<h3>共有{{ num }}篇文章</h3>
+	<div class ='list-group'>
+		
+	
+		{% for art in arts %}
+		<a class = 'list-group-item' href= "{{ url_for('show_one_art',art_id = art.id) }}" >
+		<h4>{{art.title}} </h4>
+		<span>{{art.author}}</span>
+		<span>{{art.datetime}}</span> 
+		</a>
+		{% endfor %}
+	</div>
+</div>
+{% endblock %}      

@@ -8,10 +8,12 @@ from flask.ext.wtf import Form
 from wtforms import BooleanField,StringField,SubmitField,TextAreaField,TextField,PasswordField,validators
 import uuid
 import datetime
+import hashlib
 
 
 # from wrforms.validators import Required
 # from wtforms.validators import Required
+KEY = 'the answer is 42.'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'sangyimin'
@@ -24,11 +26,11 @@ class LoginForm(Form):
 	submit = SubmitField(u'提交')
 
 class RegForm(Form):
-	username = TextField('user name',[validators.Length(min = 4,max=25)])
-	email = TextField('e-mail',[validators.Length(min=6, max=35)])
-	password = PasswordField('New Password', [validators.DataRequired(),validators.EqualTo('confirm', message='Passwords must match')])
-	confirm = PasswordField('Repeat Password')
-	accept_tos = BooleanField(u'我同意这个我从来没读过的用户协议', [validators.DataRequired()])
+	username = TextField('user name',[validators.Length(min = 4,max=25,message =u'用户名长度限制:4到25个字符'),validators.DataRequired(u'不能空着')],default = 'user001')
+	email = TextField('e-mail',[validators.Email(message = u"输入正确的e-mail")],default='user001@qq.com')
+	password = PasswordField('New Password',[validators.DataRequired(),validators.EqualTo('confirm', message='Passwords must match')],default='123456')
+	confirm = PasswordField('Repeat Password',default='123456')
+	accept_tos = BooleanField(u'我同意这个我从来没读过的用户协议', [validators.DataRequired()],default=True)
 	submit = SubmitField('submit')
 	def show(self):
 		print "username = ",self.username.data
@@ -79,9 +81,6 @@ def login():
 def reg():
 	form = RegForm(request.form)
 	if request.method == "POST" and form.validate():
-		# username = form.username
-		# email = form.email
-		# password = form.password
 		flash('reg successd')
 	else:
 		flash('failed')
@@ -92,7 +91,7 @@ def reg():
 
 @app.route('/reg_bootstrap',methods = ['GET',"POST"])
 def reg_bootstrap():
-	
+	# logging.error(request.method)
 	form = RegForm(request.form)
 	if request.method == "POST" :
 		if form.validate():
@@ -100,8 +99,15 @@ def reg_bootstrap():
 			session['username'] = form.username.data
 			session['email'] = form.email.data
 			session['password'] = form.password.data
-			
-			# flash('reg successd')
+			db.connect()
+			db.c.execute("INSERT INTO users VALUES (?,?,?,?)",
+				(form.username.data,hashlib.md5(KEY+form.password.data).hexdigest(),form.email.data,'salt'))
+			db.conn.commit()
+
+			print "-"*100
+			for user in db.c.execute('SELECT * FROM users').fetchall():
+				print user
+	
 			return redirect(url_for('reg_success'))
 
 		else:
@@ -117,10 +123,10 @@ def reg_success():
 	return render_template('reg_success.html',username = session.get('username'),email = session.get('email'),password = session.get('password'),)
 	# pass
 
-class Article(Form):
+class ArticleForm(Form):
 	title =  TextField(u'标题',[validators.DataRequired(),validators.Length(min = 1,max=25)],default = u"新文章标题")
 	author =  TextField(u'作者',[validators.DataRequired(),validators.Length(min = 1,max=25)],default = u"孙悟空")
-	content = TextAreaField(u'正文',[validators.DataRequired()],default = u"孙悟空到此一游\n孙悟空故地重游\n")
+	content = TextAreaField(u'正文',[validators.DataRequired()],default = u"孙悟空到此一游。\n孙悟空故地重游\n")
 	submit = SubmitField(u'发布')
 
 class DB:
@@ -146,7 +152,7 @@ class DB:
 		for i in range(N):
 			art = (str(uuid.uuid1()),
 				random.choice(u'个人日记 工作感悟 学习笔记 编程学习'.split())+str(i),
-				random.choice(u'Zhao Qian Sun Li'.split())+'_'+random.choice('San Si Mazi'.split()),
+				random.choice(u'赵 钱 孙 李'.split())+random.choice(u'悟空 八戒 玄奘 悟净'.split()),
 				u'我是正文',
 				datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 			arts.append(art)
@@ -185,7 +191,7 @@ class Art():
 def new_art():
 	db.connect()
 	# logging.error()
-	art = Article(request.form)
+	art = ArticleForm(request.form)
 	# for a in art:
 		# logging.error(a)
 	
@@ -201,13 +207,6 @@ def new_art():
 			# db.insert_one(table_name = 'arts',art_tuple = ('art.title',"art.author","art.content"))
 			logging.error('new art added')
 
-			#生成一个唯一的文章ID
-			#跳转到单篇文章视图,显示预览
-
-#step1 先用单页面实现数据库的存储和显示问题
-#step2 改进成为有编辑页\文章单页\全部文章单独的页面的方式
-
-
 	db_query_arts = db.find_all('arts')
 	arts = []
 	for db_query_art in db_query_arts:
@@ -221,19 +220,73 @@ def new_art():
 @app.route('/articles/<art_id>')
 def show_one_art(art_id):
 	db.connect()
-	result = db.c.execute('SELECT * FROM arts WHERE id = "e5e91740-345d-11e6-afe8-f01faf28ea2d"')
-	print '111111111111111111111111111111 result = ',result[0]
-	for r in result:
-		print '22222222222222222',r[0],r[1]
+	result = db.c.execute('SELECT * FROM arts WHERE id = ?',(art_id,)).fetchone()
 	if result:
 		art = Art(result[0],result[1],result[2],result[3],result[4])
-	return render_template('one_article.html',art = art) 
+		return render_template('one_article.html',art = art) 
+	else:
+		# errorhandler('404')
+		return redirect('/404')
 
+@app.route('/art_list')
+def show_art_list():
+	db.connect()
+	db_arts = db.c.execute('SELECT * FROM arts').fetchall()
+	arts = []
+	if db_arts:
+		for db_art in db_arts:
+			arts.append(Art(db_art[0],db_art[1],db_art[2],db_art[3],db_art[4]))
 
+	return render_template('art_list.html',arts = arts,num =len(arts))
+
+class User():
+	def __init__(self,username,password,email,salt="salt"):
+		self.username = username
+		sellf.password = password
+		self.email = email
+		self.salt = salt
+
+class LoginForm(Form):
+	username = TextField(u'用户名',[validators.DataRequired()],default ='user001' )
+	password = PasswordField(u'密码',[validators.DataRequired()])
+	save_user = BooleanField(u'记住密码',default = True)
+	submit = SubmitField(u'登陆')
+
+@app.route('/login_bootstrap',methods = ['POST','GET'])
+def login_bootstrap():
+	form = LoginForm(request.form)
+	if request.method == "POST":
+		if form.validate():
+			#到数据库中查询,返回错误
+			db.connect()
+			logging.error('username = %s,psw = %s',form.username.data,form.password.data)
+			db_password = db.c.execute("SELECT password FROM users WHERE username = ?",(form.username.data,)).fetchone()
+			if db_password:
+				if hashlib.md5(KEY + form.password.data).hexdigest() != db_password[0]:
+					# print 'db_password =%s,input_psw = %s' %(db_password , hashlib.md5(KEY+form.password.data).hexdigest() ) 
+					# logging.error('db_password = ',db_password)
+					flash(u'密码错误')
+				else:
+					flash(u'登陆成功')
+			else:
+				logging.error(db_password)
+				flash(u'用户名不存在')
+
+	return render_template('login_bootstrap.html',form = form)
+
+#----------------------------------------------
 def db_init():
 	db = DB(db_name = 'db.sql')
 	db.creat_table(table_name = 'arts')
-	db.random_insert('arts',2)
+	db.random_insert('arts',9)
+
+	# order = 'DROP TABLE IF EXISTS '+table_name
+	db.c.execute("DROP TABLE IF EXISTS users")
+	# order = 'CREATE TABLE '+table_name+' (id text,title text,author text,content text,datetime text)'
+	db.c.execute("CREATE TABLE users (username text,password text,email text,salt text)")
+	db.c.execute("INSERT INTO users VALUES (?,?,?,?)",('haha',hashlib.md5(KEY+'haha').hexdigest(),'admin@admin.com','salt'))
+	db.c.execute("INSERT INTO users VALUES (?,?,?,?)",('user001',hashlib.md5(KEY+'haha').hexdigest(),'admin@admin.com','salt'))
+	db.conn.commit() 
 	db.close()
 	return db
 

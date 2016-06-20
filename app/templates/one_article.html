@@ -3,9 +3,11 @@
 <div class="container">
 	<div class="alert alert-success" role="alert">
 		<h3> <a href="/articles/{{ art.id }}" title="">{{art.title}} </a>   </h3>
-		<small> by:{{art.author}}</small>
+		<hr>
+		<p>by:{{art.author}}</p>
 		<p>发布时间:   {{art.datetime}}</p>
 		<p>id:   {{art.id}}</p>
+		<hr>
 		<p>{{art.content}}</p>
 	</div>
 	
