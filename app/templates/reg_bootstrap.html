@@ -17,7 +17,8 @@
 	<h2>新用户注册</h2>
 	<!-- {# {{ form.csrf_token() }} #} -->
 	{{ wtf.quick_form(form) }}
-
+	<hr>
+	<a class="btn btn-info" href="{{ url_for('login_bootstrap') }}" role="button">已有账户登陆</a>
 </div>
 	
 {% endblock %}

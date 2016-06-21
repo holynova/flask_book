@@ -2,7 +2,7 @@
 import logging
 import sqlite3
 import random,os
-from flask import Flask,url_for,render_template,flash,request,session,redirect
+from flask import Flask,url_for,render_template,flash,request,session,redirect,abort
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.wtf import Form
 from wtforms import BooleanField,StringField,SubmitField,TextAreaField,TextField,PasswordField,validators
@@ -33,11 +33,12 @@ class RegForm(Form):
 	accept_tos = BooleanField(u'我同意这个我从来没读过的用户协议', [validators.DataRequired()],default=True)
 	submit = SubmitField('submit')
 	def show(self):
-		print "username = ",self.username.data
-		print "email = ",self.email.data
-		print "password = ",self.password.data
-		print "confirm = ",self.confirm.data
-		print "accept_tos = ",self.accept_tos.data
+		pass
+		# print "username = ",self.username.data
+		# print "email = ",self.email.data
+		# print "password = ",self.password.data
+		# print "confirm = ",self.confirm.data
+		# print "accept_tos = ",self.accept_tos.data
 		
 
 @app.route('/')
@@ -52,8 +53,7 @@ def page_not_found(e):
 
 @app.route('/user/<name>')
 def user(name):
-	print url_for('user',name = ' i am a <> fuckin & name')
-	print url_for("list")
+	pass
 	return render_template('index.html',name = name)
 
 @app.route('/list')
@@ -226,7 +226,8 @@ def show_one_art(art_id):
 		return render_template('one_article.html',art = art) 
 	else:
 		# errorhandler('404')
-		return redirect('/404')
+		abort(404)
+		# return redirect('/404')
 
 @app.route('/art_list')
 def show_art_list():
