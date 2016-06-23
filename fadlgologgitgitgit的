@@ -1,0 +1,47 @@
+[33mcommit 97c4af04b9507a71bd3e1ba8e0188e50cc5c4ba7[m
+Author: moonreader <holy_nova@126.com>
+Date:   Tue Jun 21 10:40:54 2016 +0800
+
+    拆分文件前最后一次同步
+
+[33mcommit 4f14069a03d4a869eff3fbbe1de82cec1e919b45[m
+Author: moonreader <holy_nova@126.com>
+Date:   Mon Jun 20 16:44:33 2016 +0800
+
+    2016年6月20日更新
+    
+    1.增加每篇文章的单独页面
+    2.增加文章列表页面(未分页)
+    3.增加注册和登陆系统
+
+[33mcommit f7c2f4353014b05d36160789461976582d31cff9[m
+Author: moonreader <holy_nova@126.com>
+Date:   Fri Jun 17 17:21:31 2016 +0800
+
+    2016年6月17日更新
+
+[33mcommit 0f9365979ed7ae6f5e4df480d4e768d7bd131c03[m
+Author: moonreader <holy_nova@126.com>
+Date:   Thu Jun 16 18:14:57 2016 +0800
+
+    写新文章页面更新
+    
+    自动随机生成5篇，存入数据库，有bug新加入的文章没法显示
+
+[33mcommit fb9b367b458a24c52432f8e954fdc5a5b1ea77cf[m
+Author: moonreader <holy_nova@126.com>
+Date:   Thu Jun 16 17:47:33 2016 +0800
+
+    增加注册页面、写新文章界面
+
+[33mcommit eede8b0e415b117b40e4968774b7da05b90be85a[m
+Author: moonreader <holy_nova@126.com>
+Date:   Thu Jun 16 08:55:53 2016 +0800
+
+    flask学习,根据书上的第一版本
+
+[33mcommit 3eae3a7e947038ad43ed491c72bd10953822d62d[m
+Author: moonreader <holy_nova@126.com>
+Date:   Wed Jun 15 17:15:04 2016 +0800
+
+    :tada: Added .gitattributes & .gitignore files
