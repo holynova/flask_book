@@ -125,3 +125,5 @@ def show_art_list():
 		for db_art in db_arts:
 			arts.append(Art(db_art[0],db_art[1],db_art[2],db_art[3],db_art[4]))
 	return render_template('art_list.html',arts = arts,num =len(arts))
+
+#2016年6月27日更新
